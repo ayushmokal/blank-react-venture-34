@@ -1,16 +1,15 @@
 interface ProductImageProps {
   url?: string;
   productName: string;
-  className?: string;
 }
 
-export function ProductImage({ url, productName, className }: ProductImageProps) {
+export function ProductImage({ url, productName }: ProductImageProps) {
   return (
-    <div className={className}>
+    <div className="relative aspect-square overflow-hidden rounded-lg">
       <img
         src={url || '/placeholder.svg'}
         alt={productName}
-        className="w-full h-full object-cover rounded-lg"
+        className="object-cover w-full h-full"
       />
     </div>
   );

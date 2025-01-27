@@ -1,29 +1,25 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-
 interface SpecificationItemProps {
   label: string;
-  value: string | number | boolean | null | undefined;
+  value: string | number | boolean | string[] | null | undefined;
 }
 
 function SpecificationItem({ label, value }: SpecificationItemProps) {
   if (value === null || value === undefined) return null;
   
-  // Handle boolean values
-  if (typeof value === 'boolean') {
-    value = value ? 'Yes' : 'No';
-  }
-
-  // Handle array values
+  let displayValue: string;
+  
   if (Array.isArray(value)) {
-    value = value.join(', ');
+    displayValue = value.join(', ');
+  } else if (typeof value === 'boolean') {
+    displayValue = value ? 'Yes' : 'No';
+  } else {
+    displayValue = String(value);
   }
 
   return (
     <div className="flex py-2 text-left">
       <span className="text-muted-foreground w-32">{label}</span>
-      <span className="font-medium text-left flex-1">{value}</span>
+      <span className="font-medium text-left flex-1">{displayValue}</span>
     </div>
   );
 }

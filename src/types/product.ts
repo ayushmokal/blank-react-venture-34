@@ -1,7 +1,7 @@
 import { Json } from '@/integrations/supabase/types';
 
 export interface BaseProductData {
-  id: string;
+  id?: string;
   name: string;
   brand: string;
   price: number;

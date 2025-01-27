@@ -1,66 +1,18 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { expertReviewSchema, type ExpertReviewFormData } from "@/schemas/productSchemas";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ExpertReviewFormData } from "@/schemas/expertReviewSchemas";
 
-export function useExpertReview(productId: string, onSuccess?: () => void) {
+export function useExpertReview() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [pros, setPros] = useState<string[]>([""]);
-  const [cons, setCons] = useState<string[]>([""]);
 
-  const form = useForm<ExpertReviewFormData>({
-    resolver: zodResolver(expertReviewSchema),
-    defaultValues: {
-      rating: 0,
-      author: "",
-      summary: "",
-      detailed_review: "",
-      pros: [""],
-      cons: [""],
-      verdict: "",
-    },
-  });
-
-  const handleAddPro = () => setPros([...pros, ""]);
-  const handleAddCon = () => setCons([...cons, ""]);
-
-  const handleProChange = (index: number, value: string) => {
-    const newPros = [...pros];
-    newPros[index] = value;
-    setPros(newPros);
-    form.setValue("pros", newPros.filter(pro => pro.trim() !== ""));
-  };
-
-  const handleConChange = (index: number, value: string) => {
-    const newCons = [...cons];
-    newCons[index] = value;
-    setCons(newCons);
-    form.setValue("cons", newCons.filter(con => con.trim() !== ""));
-  };
-
-  const onSubmit = async (data: ExpertReviewFormData) => {
+  const addExpertReview = async (productId: string, reviewData: ExpertReviewFormData) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      
-      // Clean up the detailed review HTML if it's empty
-      const detailedReview = data.detailed_review?.trim() || null;
-      
-      const { error } = await supabase
-        .from("expert_reviews")
-        .insert({
-          product_id: productId,
-          rating: data.rating,
-          author: data.author,
-          summary: data.summary,
-          detailed_review: detailedReview,
-          detailed_review: data.detailed_review,
-          pros: data.pros,
-          cons: data.cons,
-          verdict: data.verdict,
-        });
+      const { data, error } = await supabase
+        .from('expert_reviews')
+        .insert([{ product_id: productId, ...reviewData }]);
 
       if (error) throw error;
 
@@ -68,12 +20,10 @@ export function useExpertReview(productId: string, onSuccess?: () => void) {
         title: "Success",
         description: "Expert review added successfully",
       });
-      
-      form.reset();
-      setPros([""]);
-      setCons([""]);
-      onSuccess?.();
+
+      return data;
     } catch (error: any) {
+      console.error("Error adding expert review:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -85,14 +35,7 @@ export function useExpertReview(productId: string, onSuccess?: () => void) {
   };
 
   return {
-    form,
+    addExpertReview,
     isLoading,
-    pros,
-    cons,
-    handleAddPro,
-    handleAddCon,
-    handleProChange,
-    handleConChange,
-    onSubmit,
   };
 }
