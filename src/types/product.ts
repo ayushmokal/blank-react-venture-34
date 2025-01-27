@@ -69,5 +69,14 @@ export interface MobileProduct extends BaseProductData {
   general_specs?: Json;
 }
 
-export type Product = LaptopProduct | MobileProduct;
+export type Product = MobileProduct | LaptopProduct;
 export type ProductFormData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
+
+// Type guard for product types
+export const isMobileProduct = (product: Product): product is MobileProduct => {
+  return 'camera' in product;
+};
+
+export const isLaptopProduct = (product: Product): product is LaptopProduct => {
+  return 'graphics' in product;
+};

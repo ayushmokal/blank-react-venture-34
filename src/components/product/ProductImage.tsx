@@ -1,16 +1,20 @@
-interface ProductImageProps {
-  src: string;
-  alt: string;
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+
+export interface ProductImageProps {
+  url?: string;
+  productName: string;
   className?: string;
 }
 
-export function ProductImage({ src, alt, className }: ProductImageProps) {
+export function ProductImage({ url, productName, className = "" }: ProductImageProps) {
   return (
-    <img 
-      src={src} 
-      alt={alt}
-      className={className}
-      loading="lazy"
-    />
+    <AspectRatio ratio={1} className={`overflow-hidden rounded-lg ${className}`}>
+      <img
+        src={url || "/placeholder.svg"}
+        alt={productName}
+        className="h-full w-full object-cover"
+        loading="lazy"
+      />
+    </AspectRatio>
   );
 }

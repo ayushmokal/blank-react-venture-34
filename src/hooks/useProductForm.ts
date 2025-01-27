@@ -1,21 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  mobileProductSchema, 
-  laptopProductSchema,
-  mobileProductUpdateSchema,
-  laptopProductUpdateSchema 
-} from "@/schemas/productSchemas";
+import { mobileProductSchema, laptopProductSchema } from "@/schemas/productSchemas";
 import { useImageUpload } from "./useImageUpload";
-import { useAuthCheck } from "./useAuthCheck";
-import { useProductData } from "./useProductData";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { useProductData } from "@/hooks/useProductData";
 import { supabase } from "@/integrations/supabase/client";
-import type { UseProductFormProps, MobileProductData, LaptopProductData } from "../components/admin/types/productTypes";
+import type { ProductFormData, Product } from "@/types/product";
 
-export function useProductForm({ initialData, onSuccess, productType: propProductType }: UseProductFormProps) {
+interface UseProductFormProps {
+  initialData?: Product;
+  onSuccess?: (productId: string) => void;
+  productType?: 'mobile' | 'laptop';
+}
+
+const getDefaultValues = (productType: 'mobile' | 'laptop'): ProductFormData => {
+  const baseValues = {
+    name: "",
+    brand: "",
+    price: 0,
+    display_specs: "",
+    processor: "",
+    ram: "",
+    storage: "",
+    battery: "",
+  };
+
+  if (productType === 'mobile') {
+    return {
+      ...baseValues,
+      camera: "",
+    };
+  }
+
+  return {
+    ...baseValues,
+    graphics: "",
+  };
+};
+
+export function useProductForm({ initialData, onSuccess, productType = 'mobile' }: UseProductFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [productType, setProductType] = useState<'mobile' | 'laptop'>(propProductType || 'mobile');
   const { toast, navigate } = useAuthCheck();
   const { updateProduct, insertProduct } = useProductData();
   const { 
@@ -27,18 +52,44 @@ export function useProductForm({ initialData, onSuccess, productType: propProduc
     uploadImage 
   } = useImageUpload();
 
-  // Use different schemas for create vs update
-  const schema = initialData 
-    ? (productType === 'mobile' ? mobileProductUpdateSchema : laptopProductUpdateSchema)
-    : (productType === 'mobile' ? mobileProductSchema : laptopProductSchema);
-
-  const form = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: initialData || getDefaultValues(),
+  const form = useForm<ProductFormData>({
+    resolver: zodResolver(productType === 'mobile' ? mobileProductSchema : laptopProductSchema),
+    defaultValues: initialData || getDefaultValues(productType),
   });
 
-  // Rest of the code remains the same...
-  // (keeping existing functionality, just using different schemas)
+  const handleSubmit = async (data: ProductFormData) => {
+    try {
+      setIsLoading(true);
+      const table = productType === 'mobile' ? 'mobile_products' : 'laptops';
+      let result;
+
+      if (initialData?.id) {
+        result = await updateProduct(table, initialData.id, data);
+        toast({
+          title: "Success",
+          description: `${productType === 'mobile' ? 'Mobile phone' : 'Laptop'} updated successfully`,
+        });
+      } else {
+        result = await insertProduct(table, data);
+        toast({
+          title: "Success",
+          description: `${productType === 'mobile' ? 'Mobile phone' : 'Laptop'} added successfully`,
+        });
+      }
+
+      form.reset(getDefaultValues(productType));
+      onSuccess?.(result.id);
+    } catch (error: any) {
+      console.error('Error submitting form:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to save product",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
     form,
@@ -47,6 +98,6 @@ export function useProductForm({ initialData, onSuccess, productType: propProduc
     handleMainImageChange,
     handleGalleryImagesChange,
     handleRemoveGalleryImage: (index: number) => handleRemoveGalleryImage(index, form),
-    onSubmit,
+    onSubmit: handleSubmit,
   };
 }
