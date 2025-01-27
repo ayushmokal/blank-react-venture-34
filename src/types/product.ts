@@ -1,35 +1,35 @@
 import { Json } from './json';
 
-export interface BaseProduct {
-  id: string;
+export interface BaseProductData {
+  id?: string;
   name: string;
   brand: string;
   price: number;
-  image_url: string | null;
+  image_url?: string;
   display_specs: string;
   processor: string;
   ram: string;
   storage: string;
   battery: string;
-  os: string | null;
-  color: string | null;
-  created_at: string;
-  updated_at: string;
-  gallery_images: string[] | null;
-  model_name: string | null;
+  os?: string;
+  color?: string;
+  created_at?: string;
+  updated_at?: string;
+  gallery_images?: string[];
+  model_name?: string;
   multimedia_specs?: Json;
   design_specs?: Json;
   performance_specs?: Json;
   display_details?: Json;
 }
 
-export interface LaptopProduct extends BaseProduct {
-  graphics: string | null;
-  ports: string | null;
+export interface LaptopProduct extends BaseProductData {
+  graphics?: string;
+  ports?: string;
   connectivity_specs?: Json;
 }
 
-export interface MobileProduct extends BaseProduct {
+export interface MobileProduct extends BaseProductData {
   camera: string;
   chipset?: string;
   charging_specs?: string;
@@ -70,5 +70,4 @@ export interface MobileProduct extends BaseProduct {
 }
 
 export type Product = LaptopProduct | MobileProduct;
-
 export type ProductFormData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
