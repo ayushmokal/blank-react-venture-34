@@ -1,50 +1,97 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
+import { FeaturedArticlesGrid } from "@/components/FeaturedArticlesGrid";
+import { CarouselSection } from "@/components/CarouselSection";
+import { ArticleTabs } from "@/components/ArticleTabs";
+import { BlogSidebar } from "@/components/BlogSidebar";
+import { PopularMobiles } from "@/components/product/PopularMobiles";
+import type { BlogFormData } from "@/types/blog";
 
-const Index = () => {
+export default function Index() {
+  const [activeTab, setActiveTab] = useState("popular");
+
+  const { data: featuredArticles = [] } = useQuery({
+    queryKey: ['featured-articles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .eq('featured', true)
+        .order('created_at', { ascending: false })
+        .limit(6); // Limit to exactly 6 featured articles
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const { data: popularArticles = [] } = useQuery({
+    queryKey: ['popular-articles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .eq('popular', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const { data: recentArticles = [] } = useQuery({
+    queryKey: ['recent-articles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(6);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className="min-h-screen flex items-center justify-center bg-neutral-50"
-    >
-      <div className="text-center px-4 md:px-8 max-w-3xl mx-auto">
-        <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="inline-block mb-4 text-sm tracking-wider uppercase bg-neutral-100 px-3 py-1 rounded-full text-neutral-600"
-        >
-          Welcome
-        </motion.span>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="text-4xl md:text-5xl font-light mb-6 text-neutral-800"
-        >
-          Create something beautiful
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-lg text-neutral-600 mb-8 leading-relaxed"
-        >
-          Start with a clean foundation and build your vision
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-        >
-          <button className="px-6 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors duration-200">
-            Get Started
-          </button>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-};
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      
+      <main className="container mx-auto px-4 py-8">
+        <FeaturedArticlesGrid articles={featuredArticles} />
 
-export default Index;
+        <div className="w-full h-[200px] bg-gray-200 flex items-center justify-center my-8">
+          <span className="text-gray-500">Advertisement</span>
+        </div>
+
+        <CarouselSection 
+          title="Tech Deals" 
+          linkTo="/tech" 
+          articles={popularArticles.filter(article => article.category === 'TECH')} 
+        />
+
+        <PopularMobiles />
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8">
+            <ArticleTabs
+              popularArticles={popularArticles}
+              recentArticles={recentArticles}
+              onTabChange={setActiveTab}
+              category="HOME"
+            />
+          </div>
+
+          <div className="lg:col-span-4">
+            <BlogSidebar />
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

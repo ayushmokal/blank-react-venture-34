@@ -1,0 +1,132 @@
+import { Button } from "@/components/ui/button";
+import { Image as LucideImage } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ProductImage } from "./ProductImage";
+import { FileText, BookOpen } from "lucide-react";
+
+interface Product {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  image_url?: string;
+  display_specs: string;
+  processor: string;
+  ram: string;
+  storage: string;
+  battery: string;
+  camera?: string;
+  os?: string;
+  chipset?: string;
+  color?: string;
+  graphics?: string;
+  ports?: string;
+  model_name?: string;
+  resolution?: string;
+  screen_size?: string;
+  charging_specs?: string;
+  gallery_images?: string[];
+}
+
+interface ProductTableProps {
+  products: Product[];
+  onView: (product: Product) => void;
+  onAddReview: (product: Product) => void;
+  onAddDetailedReview: (product: Product) => void;
+  onDelete: (id: string) => void;
+  onUpdateImages: (product: Product) => void;
+}
+
+export function ProductTable({
+  products,
+  onView,
+  onAddReview,
+  onAddDetailedReview,
+  onDelete,
+  onUpdateImages,
+}: ProductTableProps) {
+  return (
+    <div className="border rounded-md">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-16">Image</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Brand</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead className="w-[500px]">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products.map((product) => (
+            <TableRow key={product.id}>
+              <TableCell>
+                {product.image_url && (
+                  <div className="w-20 h-20">
+                    <ProductImage imageUrl={product.image_url} productName={product.name} />
+                  </div>
+                )}
+              </TableCell>
+              <TableCell>{product.name}</TableCell>
+              <TableCell>{product.brand}</TableCell>
+              <TableCell>₹{product.price.toLocaleString()}</TableCell>
+              <TableCell>
+                <div className="w-[300px] overflow-x-auto">
+                  <div className="flex items-center gap-2 p-1 pr-4 min-w-max">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onView(product)}
+                    >
+                      View Details
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onUpdateImages(product)}
+                    >
+                      <LucideImage className="h-4 w-4 mr-1" />
+                      Images
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onAddReview(product)}
+                      className="whitespace-nowrap flex items-center"
+                    >
+                      <FileText className="h-4 w-4 mr-1" />
+                      Add Review
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onAddDetailedReview(product)}
+                      className="whitespace-nowrap flex items-center"
+                    >
+                      <BookOpen className="h-4 w-4 mr-1" />
+                      Add Detailed Review
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onDelete(product.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
