@@ -1,3 +1,5 @@
+import { Json } from './json';
+
 export interface BaseProduct {
   id: string;
   name: string;
@@ -68,3 +70,5 @@ export interface MobileProduct extends BaseProduct {
 }
 
 export type Product = LaptopProduct | MobileProduct;
+
+export type ProductFormData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;

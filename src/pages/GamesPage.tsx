@@ -1,113 +1,60 @@
 import { useState } from "react";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
+import { CategoryPageContent } from "@/components/category/CategoryPageContent";
+import { CategoryHeader } from "@/components/category/CategoryHeader";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CategoryHero } from "@/components/CategoryHero";
-import { ArticleGrid } from "@/components/ArticleGrid";
-import { ArticleTabs } from "@/components/ArticleTabs";
-import { BlogSidebar } from "@/components/BlogSidebar";
-import { categories } from "@/types/blog";
-import { CategoryHeader } from "@/components/CategoryHeader";
-import type { Subcategory } from "@/types/blog";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function GamesPage() {
-  const [platform, setPlatform] = useState<Subcategory | "ALL">("ALL");
-  const [activeTab, setActiveTab] = useState("popular");
+export function GamesPage() {
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("ALL");
 
-  // Query for category-specific featured articles
-  const { data: featuredArticles = [] } = useQuery({
-    queryKey: ['games-featured-articles'],
+  const handleSubcategoryChange = (newSubcategory: string) => {
+    setSelectedSubcategory(newSubcategory);
+  };
+
+  const { data: blogs, isLoading } = useQuery({
+    queryKey: ['blogs', 'games', selectedSubcategory],
     queryFn: async () => {
-      console.log('Fetching featured games articles');
-      const { data, error } = await supabase
-        .from('blogs')
-        .select('*')
-        .eq('category', 'GAMES')
-        .eq('featured_in_category', true)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching featured games articles:', error);
-        throw error;
-      }
-      
-      return data || [];
-    }
-  });
-
-  // Query for all games articles
-  const { data: articles = [] } = useQuery({
-    queryKey: ['games-articles', platform],
-    queryFn: async () => {
-      console.log('Fetching games articles with platform:', platform);
       let query = supabase
         .from('blogs')
         .select('*')
-        .eq('category', 'GAMES')
+        .eq('category', 'games')
         .order('created_at', { ascending: false });
-      
-      if (platform !== "ALL") {
-        query = query.eq('subcategory', platform);
+
+      if (selectedSubcategory !== "ALL") {
+        query = query.eq('subcategory', selectedSubcategory);
       }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching games articles:', error);
-        throw error;
-      }
-      
-      return data || [];
-    }
+
+      const { data } = await query;
+      return data;
+    },
   });
 
-  const mainFeaturedArticle = featuredArticles[0];
-  const gridFeaturedArticles = featuredArticles.slice(1, 3);
-  const popularArticles = articles || [];
-  const recentArticles = articles.slice(0, 6) || [];
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-[200px] w-full mb-8" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} className="h-[300px]" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
-      <CategoryHeader
-        title="Games"
-        subcategories={categories.GAMES}
-        selectedSubcategory={platform}
-        onSubcategoryChange={setPlatform}
+    <div>
+      <CategoryHeader 
+        title="Gaming" 
+        description="Latest gaming news, reviews, and guides" 
       />
-
-      <main className="container mx-auto px-4 py-8">
-        {platform === "ALL" && mainFeaturedArticle && (
-          <CategoryHero 
-            featuredArticle={mainFeaturedArticle} 
-            gridArticles={gridFeaturedArticles} 
-          />
-        )}
-
-        <ArticleGrid articles={articles.slice(0, 4)} />
-
-        <div className="w-full h-[200px] bg-gray-200 flex items-center justify-center my-8">
-          <span className="text-gray-500">Advertisement</span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8">
-            <ArticleTabs
-              popularArticles={popularArticles}
-              recentArticles={recentArticles}
-              onTabChange={setActiveTab}
-              category="GAMES"
-            />
-          </div>
-
-          <div className="lg:col-span-4">
-            <BlogSidebar />
-          </div>
-        </div>
-      </main>
-      <Footer />
+      <CategoryPageContent
+        blogs={blogs || []}
+        onSubcategoryChange={handleSubcategoryChange}
+        selectedSubcategory={selectedSubcategory}
+        subcategories={["ALL", "News", "Reviews", "Guides"]}
+      />
     </div>
   );
 }
