@@ -1,11 +1,10 @@
-import { Json } from './json';
+import { Json } from '@/integrations/supabase/types';
 
 export interface BaseProductData {
   id?: string;
   name: string;
   brand: string;
   price: number;
-  image_url?: string;
   display_specs: string;
   processor: string;
   ram: string;
@@ -13,23 +12,15 @@ export interface BaseProductData {
   battery: string;
   os?: string;
   color?: string;
-  created_at?: string;
-  updated_at?: string;
+  image_url?: string;
   gallery_images?: string[];
-  model_name?: string;
-  multimedia_specs?: Json;
   design_specs?: Json;
-  performance_specs?: Json;
   display_details?: Json;
+  performance_specs?: Json;
+  multimedia_specs?: Json;
 }
 
-export interface LaptopProduct extends BaseProductData {
-  graphics?: string;
-  ports?: string;
-  connectivity_specs?: Json;
-}
-
-export interface MobileProduct extends BaseProductData {
+export interface MobileProductData extends BaseProductData {
   camera: string;
   chipset?: string;
   charging_specs?: string;
@@ -59,24 +50,38 @@ export interface MobileProduct extends BaseProductData {
   network_speed?: string;
   sensors?: string[];
   available_colors?: string[];
-  bands_2g?: string[];
-  bands_3g?: string[];
-  bands_4g?: string[];
-  bands_5g?: string[];
   camera_details?: Json;
   sensor_specs?: Json;
   network_specs?: Json;
   general_specs?: Json;
 }
 
-export type Product = MobileProduct | LaptopProduct;
-export type ProductFormData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
+export interface LaptopProductData extends BaseProductData {
+  graphics?: string;
+  ports?: string;
+  connectivity_specs?: Json;
+}
 
-// Type guard for product types
-export const isMobileProduct = (product: Product): product is MobileProduct => {
-  return 'camera' in product;
-};
+export type ProductFormData = MobileProductData | LaptopProductData;
 
-export const isLaptopProduct = (product: Product): product is LaptopProduct => {
-  return 'graphics' in product;
-};
+// Create missing review components
+<lov-write file_path="src/components/product/ExpertReview.tsx">
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Product } from "@/types/product";
+
+interface ExpertReviewProps {
+  product: Product;
+}
+
+export function ExpertReview({ product }: ExpertReviewProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Expert Review</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* Add expert review content */}
+      </CardContent>
+    </Card>
+  );
+}
