@@ -1,18 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Product } from "@/types/product";
 
 interface UserReviewsProps {
-  product: Product;
+  productId: string;
 }
 
-export function UserReviews({ product }: UserReviewsProps) {
+export function UserReviews({ productId }: UserReviewsProps) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>User Reviews</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Add user reviews content */}
+        <p className="text-muted-foreground">User reviews coming soon...</p>
       </CardContent>
     </Card>
   );

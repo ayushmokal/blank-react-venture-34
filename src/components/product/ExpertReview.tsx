@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductReview } from "./ProductReview";
 
-interface DetailedReviewProps {
+interface ExpertReviewProps {
   productId: string;
 }
 
-export function DetailedReview({ productId }: DetailedReviewProps) {
+export function ExpertReview({ productId }: ExpertReviewProps) {
   return (
     <div className="space-y-6">
       <ProductReview productId={productId} />

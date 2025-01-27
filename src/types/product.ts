@@ -62,26 +62,14 @@ export interface LaptopProductData extends BaseProductData {
   connectivity_specs?: Json;
 }
 
-export type ProductFormData = MobileProductData | LaptopProductData;
+export type Product = MobileProductData | LaptopProductData;
+export type ProductFormData = Product;
 
-// Create missing review components
-<lov-write file_path="src/components/product/ExpertReview.tsx">
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Product } from "@/types/product";
+// Type guards
+export const isMobileProduct = (product: Product): product is MobileProductData => {
+  return 'camera' in product;
+};
 
-interface ExpertReviewProps {
-  product: Product;
-}
-
-export function ExpertReview({ product }: ExpertReviewProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Expert Review</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Add expert review content */}
-      </CardContent>
-    </Card>
-  );
-}
+export const isLaptopProduct = (product: Product): product is LaptopProductData => {
+  return 'graphics' in product;
+};
