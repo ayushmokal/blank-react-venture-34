@@ -1,16 +1,12 @@
 import { useState } from "react";
-import { CategoryPageContent } from "@/components/category/CategoryPageContent";
-import { CategoryHeader } from "@/components/category/CategoryHeader";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
-export function GamesPage() {
+export default function GamesPage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("ALL");
-
-  const handleSubcategoryChange = (newSubcategory: string) => {
-    setSelectedSubcategory(newSubcategory);
-  };
 
   const { data: blogs, isLoading } = useQuery({
     queryKey: ['blogs', 'games', selectedSubcategory],
@@ -45,16 +41,34 @@ export function GamesPage() {
 
   return (
     <div>
-      <CategoryHeader 
-        title="Gaming" 
-        description="Latest gaming news, reviews, and guides" 
-      />
-      <CategoryPageContent
-        blogs={blogs || []}
-        onSubcategoryChange={handleSubcategoryChange}
-        selectedSubcategory={selectedSubcategory}
-        subcategories={["ALL", "News", "Reviews", "Guides"]}
-      />
+      <Navigation />
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8">Gaming News & Reviews</h1>
+        <div className="flex gap-4 mb-8">
+          {["ALL", "News", "Reviews", "Guides"].map((sub) => (
+            <button
+              key={sub}
+              onClick={() => setSelectedSubcategory(sub)}
+              className={`px-4 py-2 rounded-lg ${
+                selectedSubcategory === sub
+                  ? "bg-primary text-white"
+                  : "bg-gray-100 hover:bg-gray-200"
+              }`}
+            >
+              {sub}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {blogs?.map((blog) => (
+            <div key={blog.id} className="border rounded-lg p-4">
+              <h2 className="text-xl font-semibold mb-2">{blog.title}</h2>
+              <p className="text-gray-600">{blog.content.substring(0, 150)}...</p>
+            </div>
+          ))}
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
