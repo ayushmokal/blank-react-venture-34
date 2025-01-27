@@ -1,7 +1,7 @@
 import { Json } from '@/integrations/supabase/types';
 
 export interface BaseProductData {
-  id?: string;
+  id: string;
   name: string;
   brand: string;
   price: number;
@@ -48,6 +48,8 @@ export interface MobileProductData extends BaseProductData {
   infrared?: boolean;
   network_technology?: string;
   network_speed?: string;
+  loudspeaker_type?: string;
+  audio_jack?: boolean;
   sensors?: string[];
   available_colors?: string[];
   camera_details?: Json;
@@ -63,7 +65,7 @@ export interface LaptopProductData extends BaseProductData {
 }
 
 export type Product = MobileProductData | LaptopProductData;
-export type ProductFormData = Product;
+export type ProductFormData = Omit<Product, 'id'> & { id?: string };
 
 // Type guards
 export const isMobileProduct = (product: Product): product is MobileProductData => {
@@ -73,3 +75,7 @@ export const isMobileProduct = (product: Product): product is MobileProductData 
 export const isLaptopProduct = (product: Product): product is LaptopProductData => {
   return 'graphics' in product;
 };
+
+// Re-export for components that need these types
+export type { MobileProductData as MobileProduct };
+export type { LaptopProductData as LaptopProduct };
